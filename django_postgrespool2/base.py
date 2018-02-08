@@ -4,8 +4,10 @@ import logging
 from functools import partial
 
 from sqlalchemy import event
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.pool import manage, QueuePool
 from psycopg2 import InterfaceError, ProgrammingError, OperationalError
+import psycopg2
 
 from django.conf import settings
 
@@ -25,6 +27,8 @@ POOL_SETTINGS = 'DATABASE_POOL_ARGS'
 # DATABASE_POOL_ARGS should be something like:
 # {'max_overflow':10, 'pool_size':5, 'recycle':300}
 pool_args = getattr(settings, POOL_SETTINGS, {})
+dialect = postgresql.dialect(dbapi=psycopg2)
+pool_args['dialect'] = dialect
 db_pool = manage(Database, **pool_args)
 
 log = logging.getLogger('z.pool')
