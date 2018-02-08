@@ -27,8 +27,9 @@ POOL_SETTINGS = 'DATABASE_POOL_ARGS'
 # DATABASE_POOL_ARGS should be something like:
 # {'max_overflow':10, 'pool_size':5, 'recycle':300}
 pool_args = getattr(settings, POOL_SETTINGS, {})
-dialect = postgresql.dialect(dbapi=psycopg2)
-pool_args['dialect'] = dialect
+if 'dialect' not in pool_args:
+    dialect = postgresql.dialect(dbapi=psycopg2)
+    pool_args['dialect'] = dialect
 db_pool = manage(Database, **pool_args)
 
 log = logging.getLogger('z.pool')
