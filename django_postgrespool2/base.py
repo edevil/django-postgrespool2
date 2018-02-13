@@ -6,7 +6,6 @@ from functools import partial
 from sqlalchemy import event
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.pool import manage, QueuePool
-from psycopg2 import InterfaceError, ProgrammingError, OperationalError
 import psycopg2
 
 from django.conf import settings
@@ -80,6 +79,7 @@ def is_disconnect(e, connection, cursor):
             'SSL SYSCALL error: Bad file descriptor',
             'SSL SYSCALL error: EOF detected',
             'SSL error: decryption failed or bad record mac',
+            'SSL SYSCALL error: Operation timed out',
         ]:
             idx = str_e.find(msg)
             if idx >= 0 and '"' not in str_e[:idx]:
@@ -135,7 +135,7 @@ class DatabaseWrapper(Psycopg2DatabaseWrapper):
         with self.wrap_database_errors:
             if not hasattr(self, 'psycopg2_version') or self.psycopg2_version >= (2, 4, 2):
                 if self.connection.connection.get_transaction_status() == psycopg2.extensions.TRANSACTION_STATUS_INTRANS:
-                    self.connection.connection.rollback()                
+                    self.connection.connection.rollback()
                 self.connection.connection.autocommit = autocommit
             else:
                 if autocommit:
